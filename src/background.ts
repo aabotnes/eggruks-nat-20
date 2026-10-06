@@ -1,5 +1,6 @@
 import OBR from "@owlbear-rodeo/sdk";
-import { nat20RollKey } from "./nat20";
+import { recordRoll } from "./history";
+import { finishedRoll, nat20RollKey } from "./nat20";
 import { loadSettings, playSound, TEST_CHANNEL } from "./settings";
 
 const OVERLAY_ID = "nat20-sound/overlay";
@@ -52,12 +53,26 @@ function check(playerId: string, metadata: Record<string, unknown>, isMe: boolea
   celebrate();
 }
 
+// Each player records their own rolls into the shared room history
+let lastRecorded: string | undefined;
+function recordMine(metadata: Record<string, unknown>) {
+  const roll = finishedRoll(metadata);
+  if (!roll || roll.key === lastRecorded) return;
+  lastRecorded = roll.key;
+  recordRoll(roll).catch((e) => console.warn("[nat20-sound] could not record roll", e));
+}
+
 OBR.onReady(async () => {
   const myId = await OBR.player.getId();
-  check(myId, await OBR.player.getMetadata(), true, true);
+  const myMetadata = await OBR.player.getMetadata();
+  check(myId, myMetadata, true, true);
+  recordMine(myMetadata);
   for (const p of await OBR.party.getPlayers()) check(p.id, p.metadata, false, true);
 
-  OBR.player.onChange((me) => check(myId, me.metadata, true, false));
+  OBR.player.onChange((me) => {
+    check(myId, me.metadata, true, false);
+    recordMine(me.metadata);
+  });
   OBR.party.onChange((players) => {
     for (const p of players) check(p.id, p.metadata, false, false);
   });

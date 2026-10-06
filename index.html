@@ -6,8 +6,11 @@
     <title>Eggruks Nat 20</title>
     <style>
       :root { color-scheme: dark; font-family: system-ui, sans-serif; font-size: 14px; }
-      body { margin: 0; padding: 16px; background: transparent; color: #fff; }
-      h1 { font-size: 16px; margin: 0 0 4px; }
+      html, body { height: 100%; }
+      body { margin: 0; background: transparent; color: #fff; display: flex; flex-direction: column; }
+      header { padding: 14px 16px 0; }
+      main { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+      h1 { font-size: 16px; margin: 0 0 10px; }
       h2 { font-size: 13px; margin: 16px 0 0; text-transform: uppercase; letter-spacing: .05em; opacity: .6; }
       label { display: block; margin: 10px 0 4px; opacity: 0.8; }
       label.inline { display: flex; align-items: center; gap: 8px; }
@@ -18,44 +21,88 @@
       button { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #bb99ff; color: #000; font-weight: 600; cursor: pointer; }
       button.secondary { background: #444; color: #fff; }
       #status { margin-top: 10px; font-size: 12px; opacity: 0.7; min-height: 1em; }
+      [hidden] { display: none !important; }
+
+      /* Tabs */
+      .tabs { display: flex; gap: 4px; border-bottom: 1px solid #444; }
+      .tabs button { flex: 1; background: none; color: #bbb; border-radius: 6px 6px 0 0; padding: 8px 4px; font-weight: 600; border-bottom: 2px solid transparent; }
+      .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: #bb99ff; }
+
+      /* Roll history */
+      #historyNote { font-size: 12px; opacity: .7; margin: 10px 0 0; }
+      #historyList { list-style: none; margin: 8px 0 0; padding: 0; }
+      .roll { display: grid; grid-template-columns: 4px 1fr auto; gap: 2px 10px; padding: 8px 8px 8px 0; border-bottom: 1px solid #333; align-items: center; }
+      .roll .bar { grid-column: 1; grid-row: 1 / span 2; align-self: stretch; border-radius: 2px; }
+      .roll .who { grid-column: 2; grid-row: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .roll .total { grid-column: 3; grid-row: 1 / span 2; font-size: 22px; font-weight: 800; min-width: 2ch; text-align: right; }
+      .roll .detail { grid-column: 2; grid-row: 2; font-size: 12px; opacity: .75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .roll .when { opacity: .7; }
+      .die { font-variant-numeric: tabular-nums; }
+      .die.crit { color: #ffd84d; font-weight: 700; }
+      .die.fumble { color: #ff6b6b; font-weight: 700; }
+      .badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
+      .badge.crit { background: #ffd84d; color: #3a2a00; }
+      .badge.fumble { background: #ff6b6b; color: #3a0000; }
+      .roll.is-crit { background: linear-gradient(90deg, rgba(255, 216, 77, .14), transparent 70%); }
+      .roll.is-fumble { background: linear-gradient(90deg, rgba(255, 107, 107, .12), transparent 70%); }
+      .empty { opacity: .6; text-align: center; padding: 32px 8px; }
     </style>
   </head>
   <body>
-    <h1>Eggruks Nat 20</h1>
+    <header>
+      <h1>Eggruks Nat 20</h1>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tabHistory" aria-controls="panelHistory" aria-selected="true">Roll history</button>
+        <button role="tab" id="tabSettings" aria-controls="panelSettings" aria-selected="false">Settings</button>
+      </div>
+    </header>
 
-    <h2>Sound</h2>
-    <label for="soundUrl">Sound URL</label>
-    <input id="soundUrl" type="text" placeholder="Leave blank for the choo choo" />
-    <label for="soundFile">…or upload (kept in this browser)</label>
-    <input id="soundFile" type="file" accept="audio/*" />
-    <label for="volume">Volume</label>
-    <input id="volume" type="range" min="0" max="1" step="0.05" />
+    <main>
+      <section id="panelHistory" role="tabpanel" aria-labelledby="tabHistory">
+        <p id="historyNote">Everyone's rolls with the Dice extension, newest first. Hidden rolls aren't shown.</p>
+        <ul id="historyList"></ul>
+        <div class="row" id="historyActions" hidden>
+          <button id="clearHistory" class="secondary">Clear history</button>
+        </div>
+      </section>
 
-    <h2>Animation</h2>
-    <label class="inline"><input id="animation" type="checkbox" /> Pop-up animation</label>
-    <label class="inline"><input id="rays" type="checkbox" /> Spinning rays behind the image</label>
-    <label for="imageUrl">Image URL (PNG with transparency looks best)</label>
-    <input id="imageUrl" type="text" placeholder="Leave blank for Eggruk" />
-    <label for="imageFile">…or upload (kept in this browser)</label>
-    <input id="imageFile" type="file" accept="image/*" />
-    <label for="topText">Top text</label>
-    <input id="topText" type="text" />
-    <label for="bottomText">Bottom text</label>
-    <input id="bottomText" type="text" />
+      <section id="panelSettings" role="tabpanel" aria-labelledby="tabSettings" hidden>
+        <h2>Sound</h2>
+        <label for="soundUrl">Sound URL</label>
+        <input id="soundUrl" type="text" placeholder="Leave blank for the choo choo" />
+        <label for="soundFile">…or upload (kept in this browser)</label>
+        <input id="soundFile" type="file" accept="audio/*" />
+        <label for="volume">Volume</label>
+        <input id="volume" type="range" min="0" max="1" step="0.05" />
 
-    <h2>Trigger</h2>
-    <label for="who">Play for</label>
-    <select id="who">
-      <option value="everyone">Anyone's nat 20</option>
-      <option value="me">Only my nat 20s</option>
-    </select>
+        <h2>Animation</h2>
+        <label class="inline"><input id="animation" type="checkbox" /> Pop-up animation</label>
+        <label class="inline"><input id="rays" type="checkbox" /> Spinning rays behind the image</label>
+        <label for="imageUrl">Image URL (PNG with transparency looks best)</label>
+        <input id="imageUrl" type="text" placeholder="Leave blank for Eggruk" />
+        <label for="imageFile">…or upload (kept in this browser)</label>
+        <input id="imageFile" type="file" accept="image/*" />
+        <label for="topText">Top text</label>
+        <input id="topText" type="text" />
+        <label for="bottomText">Bottom text</label>
+        <input id="bottomText" type="text" />
 
-    <div class="row">
-      <button id="test">Test</button>
-      <button id="clear" class="secondary">Clear uploads</button>
-    </div>
-    <div id="status"></div>
+        <h2>Trigger</h2>
+        <label for="who">Play for</label>
+        <select id="who">
+          <option value="everyone">Anyone's nat 20</option>
+          <option value="me">Only my nat 20s</option>
+        </select>
+
+        <div class="row">
+          <button id="test">Test</button>
+          <button id="clear" class="secondary">Clear uploads</button>
+        </div>
+        <div id="status"></div>
+      </section>
+    </main>
 
     <script type="module" src="/src/popover.ts"></script>
+    <script type="module" src="/src/historyView.ts"></script>
   </body>
 </html>
