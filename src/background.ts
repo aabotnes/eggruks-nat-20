@@ -10,14 +10,24 @@ const ANIMATION_MS = 4200;
 const lastRoll = new Map<string, string>();
 let overlayTimer: number | undefined;
 
+// OBR wraps errors as { error: { name, message } }, which logs as an unreadable object
+function describe(e: unknown): string {
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
 async function showOverlay() {
   const [width, height] = await Promise.all([OBR.viewport.getWidth(), OBR.viewport.getHeight()]);
   window.clearTimeout(overlayTimer);
-  await OBR.popover.close(OVERLAY_ID);
+  // Closing a popover that isn't open may reject; that's fine
+  await OBR.popover.close(OVERLAY_ID).catch(() => undefined);
   await OBR.popover.open({
     id: OVERLAY_ID,
-    // Absolute URL so it works wherever the extension is hosted
-    url: new URL(`overlay.html?t=${Date.now()}`, window.location.href).href,
+    // Root-relative path (e.g. /eggruks-nat-20/overlay.html); OBR resolves it against our origin
+    url: `${new URL("overlay.html", window.location.href).pathname}?t=${Date.now()}`,
     width,
     height,
     anchorReference: "POSITION",
@@ -33,9 +43,9 @@ async function showOverlay() {
 
 function celebrate() {
   const settings = loadSettings();
-  playSound(settings).catch((e) => console.warn("[nat20-sound] could not play sound", e));
+  playSound(settings).catch((e) => console.warn("[nat20-sound] could not play sound", describe(e)));
   if (settings.animation) {
-    showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", e));
+    showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
   }
 }
 
@@ -59,7 +69,7 @@ function recordMine(metadata: Record<string, unknown>) {
   const roll = finishedRoll(metadata);
   if (!roll || roll.key === lastRecorded) return;
   lastRecorded = roll.key;
-  recordRoll(roll).catch((e) => console.warn("[nat20-sound] could not record roll", e));
+  recordRoll(roll).catch((e) => console.warn("[nat20-sound] could not record roll", describe(e)));
 }
 
 OBR.onReady(async () => {
@@ -79,6 +89,6 @@ OBR.onReady(async () => {
 
   // The popover's Test button plays the sound itself; we just show the animation
   OBR.broadcast.onMessage(TEST_CHANNEL, () => {
-    showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", e));
+    showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
   });
 });
