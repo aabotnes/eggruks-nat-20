@@ -19,8 +19,18 @@ function describe(e: unknown): string {
   }
 }
 
+/** Size of the area to cover. The viewport API only works while a scene is open. */
+async function screenSize(): Promise<[number, number]> {
+  try {
+    return await Promise.all([OBR.viewport.getWidth(), OBR.viewport.getHeight()]);
+  } catch {
+    // No scene: fall back to the screen size, which this hidden background page can still read
+    return [window.screen.availWidth, window.screen.availHeight];
+  }
+}
+
 async function showOverlay() {
-  const [width, height] = await Promise.all([OBR.viewport.getWidth(), OBR.viewport.getHeight()]);
+  const [width, height] = await screenSize();
   window.clearTimeout(overlayTimer);
   // Closing a popover that isn't open may reject; that's fine
   await OBR.popover.close(OVERLAY_ID).catch(() => undefined);
@@ -38,7 +48,7 @@ async function showOverlay() {
     disableClickAway: true,
     marginThreshold: 0,
   });
-  overlayTimer = window.setTimeout(() => OBR.popover.close(OVERLAY_ID), ANIMATION_MS);
+  overlayTimer = window.setTimeout(() => OBR.popover.close(OVERLAY_ID).catch(() => undefined), ANIMATION_MS);
 }
 
 function celebrate() {
