@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eggruks Nat 20</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; font-size: 14px; }
+      body { margin: 0; padding: 16px; background: transparent; color: #fff; }
+      h1 { font-size: 16px; margin: 0 0 4px; }
+      h2 { font-size: 13px; margin: 16px 0 0; text-transform: uppercase; letter-spacing: .05em; opacity: .6; }
+      label { display: block; margin: 10px 0 4px; opacity: 0.8; }
+      label.inline { display: flex; align-items: center; gap: 8px; }
+      input[type="text"], select { width: 100%; box-sizing: border-box; padding: 6px; border-radius: 6px; border: 1px solid #555; background: #222; color: #fff; }
+      input[type="file"] { width: 100%; font-size: 12px; }
+      input[type="range"] { width: 100%; }
+      .row { display: flex; gap: 8px; margin-top: 16px; }
+      button { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #bb99ff; color: #000; font-weight: 600; cursor: pointer; }
+      button.secondary { background: #444; color: #fff; }
+      #status { margin-top: 10px; font-size: 12px; opacity: 0.7; min-height: 1em; }
+    </style>
+  </head>
+  <body>
+    <h1>Eggruks Nat 20</h1>
+
+    <h2>Sound</h2>
+    <label for="soundUrl">Sound URL</label>
+    <input id="soundUrl" type="text" placeholder="Leave blank for the choo choo" />
+    <label for="soundFile">…or upload (kept in this browser)</label>
+    <input id="soundFile" type="file" accept="audio/*" />
+    <label for="volume">Volume</label>
+    <input id="volume" type="range" min="0" max="1" step="0.05" />
+
+    <h2>Animation</h2>
+    <label class="inline"><input id="animation" type="checkbox" /> Pop-up animation</label>
+    <label class="inline"><input id="rays" type="checkbox" /> Spinning rays behind the image</label>
+    <label for="imageUrl">Image URL (PNG with transparency looks best)</label>
+    <input id="imageUrl" type="text" placeholder="Leave blank for Eggruk" />
+    <label for="imageFile">…or upload (kept in this browser)</label>
+    <input id="imageFile" type="file" accept="image/*" />
+    <label for="topText">Top text</label>
+    <input id="topText" type="text" />
+    <label for="bottomText">Bottom text</label>
+    <input id="bottomText" type="text" />
+
+    <h2>Trigger</h2>
+    <label for="who">Play for</label>
+    <select id="who">
+      <option value="everyone">Anyone's nat 20</option>
+      <option value="me">Only my nat 20s</option>
+    </select>
+
+    <div class="row">
+      <button id="test">Test</button>
+      <button id="clear" class="secondary">Clear uploads</button>
+    </div>
+    <div id="status"></div>
+
+    <script type="module" src="/src/popover.ts"></script>
+  </body>
+</html>

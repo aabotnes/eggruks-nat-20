@@ -1,0 +1,16 @@
+{
+  "name": "Eggruks Nat 20",
+  "version": "1.0.0",
+  "manifest_version": 1,
+  "author": "aabotnes",
+  "description": "Eggruk celebrates every natural 20 rolled with the Owlbear Rodeo dice, with a choo choo and a pop-up.",
+  "icon": "icon.svg",
+  "background_url": "background.html",
+  "action": {
+    "title": "Eggruks Nat 20",
+    "icon": "icon.svg",
+    "popover": "index.html",
+    "width": 320,
+    "height": 670
+  }
+}
