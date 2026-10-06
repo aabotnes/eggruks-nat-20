@@ -33,16 +33,22 @@
       #historyList { list-style: none; margin: 8px 0 0; padding: 0; }
       .roll { display: grid; grid-template-columns: 4px 1fr auto; gap: 2px 10px; padding: 8px 8px 8px 0; border-bottom: 1px solid #333; align-items: center; }
       .roll .bar { grid-column: 1; grid-row: 1 / span 2; align-self: stretch; border-radius: 2px; }
-      .roll .who { grid-column: 2; grid-row: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .roll .who { grid-column: 2; grid-row: 1; display: flex; align-items: baseline; min-width: 0; }
+      .roll .name { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .roll .total { grid-column: 3; grid-row: 1 / span 2; font-size: 22px; font-weight: 800; min-width: 2ch; text-align: right; }
-      .roll .detail { grid-column: 2; grid-row: 2; font-size: 12px; opacity: .75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .roll .when { opacity: .7; }
-      .die { font-variant-numeric: tabular-nums; }
+      .roll .detail { grid-column: 2; grid-row: 2; font-size: 13px; line-height: 1.5; }
+      .roll .notation, .roll .badge { white-space: nowrap; }
+      .roll .notation { font-weight: 700; }
+      .roll .values, .roll .op { opacity: .6; }
+      .roll .when { font-size: 11px; opacity: .55; margin-left: 8px; white-space: nowrap; }
+      .die { opacity: .8; font-variant-numeric: tabular-nums; }
+      .die.crit, .die.fumble { opacity: 1; }
       .die.crit { color: #ffd84d; font-weight: 700; }
       .die.fumble { color: #ff6b6b; font-weight: 700; }
       .badge { display: inline-block; font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-left: 6px; vertical-align: 1px; }
       .badge.crit { background: #ffd84d; color: #3a2a00; }
       .badge.fumble { background: #ff6b6b; color: #3a0000; }
+      .badge.mode { background: #555; color: #fff; margin: 0 6px 0 0; }
       .roll.is-crit { background: linear-gradient(90deg, rgba(255, 216, 77, .14), transparent 70%); }
       .roll.is-fumble { background: linear-gradient(90deg, rgba(255, 107, 107, .12), transparent 70%); }
       .empty { opacity: .6; text-align: center; padding: 32px 8px; }

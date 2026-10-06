@@ -72,35 +72,39 @@ function renderEntry(entry: HistoryEntry): HTMLLIElement {
   const bar = el("span", "bar");
   bar.style.background = entry.color;
 
-  const who = el("span", "who", entry.name);
+  const who = el("span", "who");
+  who.append(el("span", "name", entry.name));
   if (result === "crit") who.append(el("span", "badge crit", "NAT 20"));
   if (result === "fumble") who.append(el("span", "badge fumble", "NAT 1"));
+  who.append(el("span", "when", timeAgo(entry.at)));
 
   const total = el("span", "total", entry.total === null ? "–" : String(entry.total));
 
-  // e.g. "d20 20 14 · d6 3 · +5 · adv · 2m ago"
+  // Dice notation with each group's results, e.g. "3d6 (4, 2, 6) + d8 (5) + 2"
   const detail = el("span", "detail");
+  if (entry.mode === "highest") detail.append(el("span", "badge mode", "ADV"));
+  if (entry.mode === "lowest") detail.append(el("span", "badge mode", "DIS"));
   const groups = new Map<number, number[]>();
   for (const d of entry.dice) groups.set(d.sides, [...(groups.get(d.sides) ?? []), d.value]);
-  const parts: (string | HTMLElement)[] = [];
+  let first = true;
   for (const [sides, values] of groups) {
-    const group = el("span");
-    group.append(`d${sides} `);
+    if (!first) detail.append(el("span", "op", " + "));
+    first = false;
+    const group = el("span", "group");
+    group.append(el("span", "notation", `${values.length > 1 ? values.length : ""}d${sides}`));
+    group.append(el("span", "values", " ("));
     values.forEach((v, i) => {
       const cls = sides === 20 && v === 20 ? "die crit" : sides === 20 && v === 1 ? "die fumble" : "die";
       group.append(el("span", cls, String(v)));
-      if (i < values.length - 1) group.append(" ");
+      if (i < values.length - 1) group.append(el("span", "values", ", "));
     });
-    parts.push(group);
+    group.append(el("span", "values", ")"));
+    detail.append(group);
   }
-  if (entry.bonus) parts.push(entry.bonus > 0 ? `+${entry.bonus}` : String(entry.bonus));
-  if (entry.mode === "highest") parts.push("adv");
-  if (entry.mode === "lowest") parts.push("dis");
-  parts.push(el("span", "when", timeAgo(entry.at)));
-  parts.forEach((p, i) => {
-    detail.append(p);
-    if (i < parts.length - 1) detail.append(" · ");
-  });
+  if (entry.bonus) {
+    detail.append(el("span", "op", entry.bonus > 0 ? " + " : " − "));
+    detail.append(el("span", "notation", String(Math.abs(entry.bonus))));
+  }
 
   li.append(bar, who, total, detail);
   return li;
@@ -134,6 +138,7 @@ function demoHistory(): HistoryEntry[] {
     { ...players[0], at: now - 5_000, dice: [{ sides: 20, value: 20 }], bonus: 7, total: 27 },
     { ...players[1], at: now - 70_000, dice: [{ sides: 20, value: 14 }, { sides: 20, value: 6 }], bonus: 3, total: 17, mode: "highest" },
     { ...players[2], at: now - 180_000, dice: [{ sides: 6, value: 4 }, { sides: 6, value: 2 }, { sides: 6, value: 6 }], bonus: 0, total: 12 },
+    { ...players[2], at: now - 240_000, dice: [3, 7, 1, 9, 10, 2, 4, 8, 5, 6].map((value) => ({ sides: 10, value })), bonus: 0, total: 55 },
     { ...players[1], at: now - 420_000, dice: [{ sides: 20, value: 1 }], bonus: 3, total: 4 },
     { ...players[0], at: now - 3_900_000, dice: [{ sides: 8, value: 5 }, { sides: 4, value: 3 }], bonus: 2, total: 10 },
   ];
