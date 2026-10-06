@@ -2,8 +2,9 @@ import { resolve } from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  // Relative asset paths, so the build works from any folder (e.g. GitHub Pages)
-  base: "./",
+  // Served from https://aabotnes.github.io/eggruks-nat-20/. Owlbear Rodeo resolves manifest
+  // paths against the bare domain, so they (and the dev server) use this full prefix too.
+  base: "/eggruks-nat-20/",
   server: {
     // Owlbear Rodeo loads the manifest and pages cross-origin
     cors: { origin: "https://www.owlbear.rodeo" },
