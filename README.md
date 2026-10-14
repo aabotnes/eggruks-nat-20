@@ -17,7 +17,7 @@ Everyone in the room gets it automatically; players don't need to install anythi
 Click the d20 icon in the top left of a room:
 
 - **Roll history**: the latest rolls from every player, in dice notation, with natural 20s and 1s highlighted. Stored in the room; the GM can clear it.
-- **Settings**: per-player sound, volume, pop-up image and captions, and whether to celebrate everyone's nat 20s or only your own. Use **Test** to preview.
+- **Settings**: per-player sound, volume, pop-up image and captions, which dice play a crit sound when they roll their max (all on by default; the pop-up stays nat 20 only), and whether to celebrate everyone's crits or only your own. Use **Test** to preview.
 
 Hidden rolls are never shown or celebrated.
 

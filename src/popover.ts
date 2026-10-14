@@ -1,4 +1,5 @@
 import OBR from "@owlbear-rodeo/sdk";
+import { DIE_TYPES } from "./nat20";
 import { loadSettings, playSound, saveSettings, Settings, TEST_CHANNEL } from "./settings";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -15,6 +16,19 @@ const bottomText = $<HTMLInputElement>("bottomText");
 const who = $<HTMLSelectElement>("who");
 const status = $<HTMLDivElement>("status");
 
+// One checkbox per die type
+const critBoxes = new Map(
+  DIE_TYPES.map((type) => {
+    const label = document.createElement("label");
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.addEventListener("change", () => save({ critDice: { ...loadSettings().critDice, [type]: box.checked } }));
+    label.append(box, type.toLowerCase());
+    $("critDice").appendChild(label);
+    return [type, box] as const;
+  }),
+);
+
 function render() {
   const s = loadSettings();
   soundUrl.value = s.soundUrl;
@@ -25,6 +39,7 @@ function render() {
   topText.value = s.topText;
   bottomText.value = s.bottomText;
   who.value = s.who;
+  for (const [type, box] of critBoxes) box.checked = s.critDice[type];
   const notes = [];
   if (s.soundData) notes.push("Using uploaded sound.");
   if (s.imageData) notes.push("Using uploaded image.");

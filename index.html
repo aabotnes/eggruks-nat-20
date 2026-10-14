@@ -20,6 +20,9 @@
       .row { display: flex; gap: 8px; margin-top: 16px; }
       button { flex: 1; padding: 8px; border-radius: 6px; border: none; background: #bb99ff; color: #000; font-weight: 600; cursor: pointer; }
       button.secondary { background: #444; color: #fff; }
+      .dice { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px 8px; }
+      .dice label { margin: 0; display: flex; align-items: center; gap: 6px; opacity: 1; }
+      .hint { margin-top: 6px; font-size: 12px; opacity: 0.6; }
       #status { margin-top: 10px; font-size: 12px; opacity: 0.7; min-height: 1em; }
       [hidden] { display: none !important; }
 
@@ -94,10 +97,13 @@
         <input id="bottomText" type="text" />
 
         <h2>Trigger</h2>
+        <label>Crit sound when these dice roll their max</label>
+        <div id="critDice" class="dice"></div>
+        <div class="hint">The pop-up only shows for a nat 20. A d100 crit is a percentile roll of 100.</div>
         <label for="who">Play for</label>
         <select id="who">
-          <option value="everyone">Anyone's nat 20</option>
-          <option value="me">Only my nat 20s</option>
+          <option value="everyone">Anyone's crits</option>
+          <option value="me">Only my crits</option>
         </select>
 
         <div class="row">

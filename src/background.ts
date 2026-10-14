@@ -1,6 +1,6 @@
 import OBR from "@owlbear-rodeo/sdk";
 import { recordRoll } from "./history";
-import { finishedRoll, nat20RollKey } from "./nat20";
+import { finishedRoll } from "./nat20";
 import { loadSettings, playSound, TEST_CHANNEL } from "./settings";
 
 const OVERLAY_ID = "nat20-sound/overlay";
@@ -51,26 +51,30 @@ async function showOverlay() {
   overlayTimer = window.setTimeout(() => OBR.popover.close(OVERLAY_ID).catch(() => undefined), ANIMATION_MS);
 }
 
-function celebrate() {
+function celebrate(nat20: boolean) {
   const settings = loadSettings();
   playSound(settings).catch((e) => console.warn("[nat20-sound] could not play sound", describe(e)));
-  if (settings.animation) {
+  // The pop-up is reserved for nat 20s; other crits just get the sound
+  if (nat20 && settings.animation) {
     showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
   }
 }
 
 function check(playerId: string, metadata: Record<string, unknown>, isMe: boolean, initial: boolean) {
-  const key = nat20RollKey(metadata);
-  if (!key) {
+  const roll = finishedRoll(metadata);
+  if (!roll) {
     lastRoll.delete(playerId);
     return;
   }
-  if (lastRoll.get(playerId) === key) return;
-  lastRoll.set(playerId, key);
+  if (lastRoll.get(playerId) === roll.key) return;
+  lastRoll.set(playerId, roll.key);
   // Don't fire for rolls that were already on the table when we loaded
   if (initial) return;
-  if (!isMe && loadSettings().who === "me") return;
-  celebrate();
+
+  const settings = loadSettings();
+  if (!isMe && settings.who === "me") return;
+  const crit = [...roll.maxed].some((type) => settings.critDice[type]);
+  if (crit) celebrate(roll.maxed.has("D20") && settings.critDice.D20);
 }
 
 // Each player records their own rolls into the shared room history
