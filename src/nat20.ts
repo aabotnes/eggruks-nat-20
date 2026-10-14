@@ -43,6 +43,10 @@ function collectDice(roll: Dice, out: Die[] = []): Die[] {
 // a lone d100 (tens die) tops out at 90
 const MAX_FACE: Record<string, number> = { D4: 4, D6: 6, D8: 8, D10: 0, D12: 12, D20: 20, D100: 90 };
 
+export function isMaxFace(type: string, value: number): boolean {
+  return type in MAX_FACE && value === MAX_FACE[type];
+}
+
 /** Collect the die types that rolled their maximum, treating a d100 + d10 pair as one percentile roll */
 function collectMaxed(group: Dice, values: RollValues, out: Set<DieType>) {
   const dice = group.dice.filter((d): d is Die => !isDice(d) && !!d && typeof d.id === "string");
@@ -57,7 +61,7 @@ function collectMaxed(group: Dice, values: RollValues, out: Set<DieType>) {
     if (values[d100[0].id] === 0 && values[d10[0].id] === 0) out.add("D100");
   } else {
     for (const d of dice) {
-      if (d.type in MAX_FACE && values[d.id] === MAX_FACE[d.type]) out.add(d.type as DieType);
+      if (isMaxFace(d.type, values[d.id] as number)) out.add(d.type as DieType);
     }
   }
   for (const d of group.dice) if (isDice(d)) collectMaxed(d, values, out);

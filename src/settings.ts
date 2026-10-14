@@ -11,6 +11,7 @@ export interface Settings {
   who: "everyone" | "me";
   animation: boolean;
   rays: boolean;
+  rollBadges: boolean; // show rolled dice above the roller's character token
   critDice: Record<DieType, boolean>; // which dice play the sound when they roll their max
 }
 
@@ -27,6 +28,7 @@ const DEFAULTS: Settings = {
   who: "everyone",
   animation: true,
   rays: false,
+  rollBadges: true,
   critDice: { D4: true, D6: true, D8: true, D10: true, D12: true, D20: true, D100: true },
 };
 

@@ -1,6 +1,8 @@
 import OBR from "@owlbear-rodeo/sdk";
 import { recordRoll } from "./history";
+import { setupCharacterMenu } from "./character";
 import { finishedRoll } from "./nat20";
+import { showRollBadges } from "./rollBadges";
 import { loadSettings, playSound, TEST_CHANNEL } from "./settings";
 
 const OVERLAY_ID = "nat20-sound/overlay";
@@ -72,6 +74,9 @@ function check(playerId: string, metadata: Record<string, unknown>, isMe: boolea
   if (initial) return;
 
   const settings = loadSettings();
+  if (settings.rollBadges) {
+    showRollBadges(playerId, roll).catch((e) => console.warn("[nat20-sound] could not show dice on token", describe(e)));
+  }
   if (!isMe && settings.who === "me") return;
   const crit = [...roll.maxed].some((type) => settings.critDice[type]);
   if (crit) celebrate(roll.maxed.has("D20") && settings.critDice.D20);
@@ -88,6 +93,7 @@ function recordMine(metadata: Record<string, unknown>) {
 
 OBR.onReady(async () => {
   const myId = await OBR.player.getId();
+  setupCharacterMenu(myId).catch((e) => console.warn("[nat20-sound] could not add character menu", describe(e)));
   const myMetadata = await OBR.player.getMetadata();
   check(myId, myMetadata, true, true);
   recordMine(myMetadata);

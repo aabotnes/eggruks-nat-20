@@ -9,6 +9,7 @@ const soundFile = $<HTMLInputElement>("soundFile");
 const volume = $<HTMLInputElement>("volume");
 const animation = $<HTMLInputElement>("animation");
 const rays = $<HTMLInputElement>("rays");
+const rollBadges = $<HTMLInputElement>("rollBadges");
 const imageUrl = $<HTMLInputElement>("imageUrl");
 const imageFile = $<HTMLInputElement>("imageFile");
 const topText = $<HTMLInputElement>("topText");
@@ -35,6 +36,7 @@ function render() {
   volume.value = String(s.volume);
   animation.checked = s.animation;
   rays.checked = s.rays;
+  rollBadges.checked = s.rollBadges;
   imageUrl.value = s.imageUrl;
   topText.value = s.topText;
   bottomText.value = s.bottomText;
@@ -66,6 +68,7 @@ bottomText.addEventListener("input", () => save({ bottomText: bottomText.value }
 volume.addEventListener("input", () => save({ volume: Number(volume.value) }));
 animation.addEventListener("change", () => save({ animation: animation.checked }));
 rays.addEventListener("change", () => save({ rays: rays.checked }));
+rollBadges.addEventListener("change", () => save({ rollBadges: rollBadges.checked }));
 who.addEventListener("change", () => save({ who: who.value as Settings["who"] }));
 
 soundFile.addEventListener("change", async () => {
