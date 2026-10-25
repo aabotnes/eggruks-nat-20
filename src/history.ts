@@ -1,5 +1,5 @@
 import OBR from "@owlbear-rodeo/sdk";
-import { Dice, FinishedRoll, isDice, RollValues } from "./nat20";
+import { combinedValue, FinishedRoll, readFaces } from "./nat20";
 
 // Each player writes only their own key, so simultaneous rolls never overwrite each other
 export const HISTORY_PREFIX = "com.aabotnes.eggruks-nat-20/history/";
@@ -10,7 +10,7 @@ const MAX_PER_PLAYER = 15;
 interface StoredRoll {
   k: string; // short hash of the dice ids, to avoid recording the same roll twice
   at: number; // unix seconds
-  d: [number, number][]; // [sides, value] per die
+  d: [number, number][]; // [sides, value] per die, as players read it (d10 "0" is 10, percentile rolls are one d100)
   b?: number; // bonus
   s: number | null; // total, null when the dice aren't combined
   m?: "H" | "L"; // highest / lowest (advantage / disadvantage)
@@ -39,36 +39,12 @@ function hash(text: string): string {
   return (h >>> 0).toString(36);
 }
 
-/** Total of a roll, honouring advantage-style combinations and bonuses. */
-function evaluate(dice: Dice, values: RollValues): number | null {
-  const parts: number[] = [];
-  for (const d of dice.dice) {
-    const v = isDice(d) ? evaluate(d, values) : values[d.id];
-    if (typeof v !== "number") return null;
-    parts.push(v);
-  }
-  let total: number;
-  switch (dice.combination) {
-    case "HIGHEST":
-      total = Math.max(...parts);
-      break;
-    case "LOWEST":
-      total = Math.min(...parts);
-      break;
-    case "NONE":
-      return null;
-    default:
-      total = parts.reduce((a, b) => a + b, 0);
-  }
-  return total + (dice.bonus ?? 0);
-}
-
 export function toStored(roll: FinishedRoll): StoredRoll {
   const stored: StoredRoll = {
     k: hash(roll.key),
     at: Math.floor(Date.now() / 1000),
-    d: roll.dice.map((d) => [parseInt(d.type.slice(1), 10) || 0, d.value]),
-    s: evaluate(roll.roll, roll.values),
+    d: readFaces(roll.roll, roll.values).map((d) => [d.sides, d.value]),
+    s: combinedValue(roll.roll, roll.values),
   };
   if (roll.roll.bonus) stored.b = roll.roll.bonus;
   if (roll.roll.combination === "HIGHEST") stored.m = "H";
