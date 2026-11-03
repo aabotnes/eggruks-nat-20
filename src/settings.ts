@@ -10,23 +10,28 @@ export interface Settings {
   volume: number;
   who: "everyone" | "me";
   animation: boolean;
+  popupAllCrits: boolean; // show the pop-up for every crit die, not just a nat 20
+  tokenImage: boolean; // use the roller's character token as the pop-up image when there's no custom image
   rays: boolean;
   rollBadges: boolean; // show rolled dice above the roller's character token
   critDice: Record<DieType, boolean>; // which dice play the sound when they roll their max
 }
 
 const KEY = "nat20-sound/settings";
+export const DEFAULT_TOP_TEXT = "NAT 20";
 
 const DEFAULTS: Settings = {
   soundUrl: "",
   soundData: "",
   imageUrl: "",
   imageData: "",
-  topText: "NAT 20",
+  topText: DEFAULT_TOP_TEXT,
   bottomText: "",
   volume: 0.8,
   who: "everyone",
   animation: true,
+  popupAllCrits: false,
+  tokenImage: true,
   rays: false,
   rollBadges: true,
   critDice: { D4: true, D6: true, D8: true, D10: true, D12: true, D20: true, D100: true },

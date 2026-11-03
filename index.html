@@ -86,6 +86,9 @@
 
         <h2>Animation</h2>
         <label class="inline"><input id="animation" type="checkbox" /> Pop-up animation</label>
+        <label class="inline"><input id="popupAllCrits" type="checkbox" /> Pop up for every crit, not just a nat 20</label>
+        <label class="inline"><input id="tokenImage" type="checkbox" /> Show the roller's character token</label>
+        <div class="hint">Uses the token set with <b>Set as my character</b>. Falls back to Eggruk, or your image below, which takes priority.</div>
         <label class="inline"><input id="rays" type="checkbox" /> Spinning rays behind the image</label>
         <label for="imageUrl">Image URL (PNG with transparency looks best)</label>
         <input id="imageUrl" type="text" placeholder="Leave blank for Eggruk" />
@@ -103,7 +106,7 @@
         <h2>Trigger</h2>
         <label>Crit sound when these dice roll their max</label>
         <div id="critDice" class="dice"></div>
-        <div class="hint">The pop-up only shows for a nat 20. A d100 crit is a percentile roll of 100.</div>
+        <div class="hint">The pop-up shows for a nat 20 unless it's set to pop up for every crit. A d100 crit is a percentile roll of 100.</div>
         <label for="who">Play for</label>
         <select id="who">
           <option value="everyone">Anyone's crits</option>

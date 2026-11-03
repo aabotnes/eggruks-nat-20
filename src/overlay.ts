@@ -61,20 +61,25 @@ function fitCaption(el: HTMLElement) {
   }
 }
 
+// The background page passes the roller's token image and, for crits other than a nat 20, the caption
+const params = new URLSearchParams(window.location.search);
 const settings = loadSettings();
 if (!settings.rays) document.getElementById("rays")!.remove();
-for (const [id, text] of [["top", settings.topText], ["bottom", settings.bottomText]]) {
+for (const [id, text] of [["top", params.get("top") ?? settings.topText], ["bottom", settings.bottomText]]) {
   const el = document.getElementById(id)!;
   el.textContent = text;
   fitCaption(el);
 }
 
 const img = document.getElementById("pop") as HTMLImageElement;
+const eggruk = new URL(EGGRUK_IMAGES[Math.floor(Math.random() * EGGRUK_IMAGES.length)], window.location.href).href;
+// A broken custom or token image falls back to Eggruk, and a broken Eggruk to the starburst
 img.onerror = () => {
-  if (img.src !== FALLBACK_IMAGE) img.src = FALLBACK_IMAGE;
+  if (img.src !== eggruk && img.src !== FALLBACK_IMAGE) img.src = eggruk;
+  else if (img.src !== FALLBACK_IMAGE) img.src = FALLBACK_IMAGE;
 };
 img.onload = () => {
   document.getElementById("stage")!.classList.add("go");
   burst();
 };
-img.src = imageSource(settings) || EGGRUK_IMAGES[Math.floor(Math.random() * EGGRUK_IMAGES.length)];
+img.src = imageSource(settings) || params.get("img") || eggruk;
