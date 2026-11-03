@@ -1,9 +1,9 @@
-import OBR from "@owlbear-rodeo/sdk";
+import OBR, { isImage } from "@owlbear-rodeo/sdk";
 import { recordRoll } from "./history";
-import { setupCharacterMenu } from "./character";
-import { finishedRoll } from "./nat20";
+import { findCharacter, setupCharacterMenu } from "./character";
+import { DieType, finishedRoll } from "./nat20";
 import { showRollBadges } from "./rollBadges";
-import { loadSettings, playSound, TEST_CHANNEL } from "./settings";
+import { DEFAULT_TOP_TEXT, loadSettings, playSound, Settings, TEST_CHANNEL } from "./settings";
 
 const OVERLAY_ID = "nat20-sound/overlay";
 const ANIMATION_MS = 4200;
@@ -31,7 +31,21 @@ async function screenSize(): Promise<[number, number]> {
   }
 }
 
-async function showOverlay() {
+/** The image of a player's character token, if they have one the table can see */
+async function tokenImage(playerId: string): Promise<string | undefined> {
+  if (!(await OBR.scene.isReady())) return undefined;
+  const token = await findCharacter(playerId);
+  // A token the GM has hidden would give away that it's on the map
+  return token && token.visible && isImage(token) ? token.image.url : undefined;
+}
+
+async function showOverlay(settings: Settings, playerId: string, top?: string) {
+  const query = new URLSearchParams({ t: String(Date.now()) });
+  if (settings.tokenImage) {
+    const image = await tokenImage(playerId).catch(() => undefined);
+    if (image) query.set("img", image);
+  }
+  if (top !== undefined) query.set("top", top);
   const [width, height] = await screenSize();
   window.clearTimeout(overlayTimer);
   // Closing a popover that isn't open may reject; that's fine
@@ -39,7 +53,7 @@ async function showOverlay() {
   await OBR.popover.open({
     id: OVERLAY_ID,
     // Root-relative path (e.g. /eggruks-nat-20/overlay.html); OBR resolves it against our origin
-    url: `${new URL("overlay.html", window.location.href).pathname}?t=${Date.now()}`,
+    url: `${new URL("overlay.html", window.location.href).pathname}?${query}`,
     width,
     height,
     anchorReference: "POSITION",
@@ -53,13 +67,17 @@ async function showOverlay() {
   overlayTimer = window.setTimeout(() => OBR.popover.close(OVERLAY_ID).catch(() => undefined), ANIMATION_MS);
 }
 
-function celebrate(nat20: boolean) {
-  const settings = loadSettings();
+const SIDES: Record<DieType, number> = { D4: 4, D6: 6, D8: 8, D10: 10, D12: 12, D20: 20, D100: 100 };
+
+function celebrate(settings: Settings, playerId: string, crits: DieType[]) {
   playSound(settings).catch((e) => console.warn("[nat20-sound] could not play sound", describe(e)));
-  // The pop-up is reserved for nat 20s; other crits just get the sound
-  if (nat20 && settings.animation) {
-    showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
-  }
+  const nat20 = crits.includes("D20");
+  // By default the pop-up is reserved for nat 20s and other crits just get the sound
+  if (!settings.animation || !(nat20 || settings.popupAllCrits)) return;
+  // The default "NAT 20" caption would be wrong for other dice, so say which one maxed instead
+  const top =
+    nat20 || settings.topText !== DEFAULT_TOP_TEXT ? undefined : `NAT ${Math.max(...crits.map((type) => SIDES[type]))}`;
+  showOverlay(settings, playerId, top).catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
 }
 
 function check(playerId: string, metadata: Record<string, unknown>, isMe: boolean, initial: boolean) {
@@ -78,8 +96,8 @@ function check(playerId: string, metadata: Record<string, unknown>, isMe: boolea
     showRollBadges(playerId, roll).catch((e) => console.warn("[nat20-sound] could not show dice on token", describe(e)));
   }
   if (!isMe && settings.who === "me") return;
-  const crit = [...roll.maxed].some((type) => settings.critDice[type]);
-  if (crit) celebrate(roll.maxed.has("D20") && settings.critDice.D20);
+  const crits = [...roll.maxed].filter((type) => settings.critDice[type]);
+  if (crits.length > 0) celebrate(settings, playerId, crits);
 }
 
 // Each player records their own rolls into the shared room history
@@ -109,6 +127,6 @@ OBR.onReady(async () => {
 
   // The popover's Test button plays the sound itself; we just show the animation
   OBR.broadcast.onMessage(TEST_CHANNEL, () => {
-    showOverlay().catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
+    showOverlay(loadSettings(), myId).catch((e) => console.warn("[nat20-sound] could not show animation", describe(e)));
   });
 });
