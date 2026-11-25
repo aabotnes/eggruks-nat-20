@@ -17,9 +17,9 @@ interface Claim {
   at: number;
 }
 
-/** Players may take control of their character unless the GM has switched it off */
+/** Players may take control of their character only once the GM has switched it on */
 export function controlAllowed(roomMetadata: Record<string, unknown>): boolean {
-  return roomMetadata[ALLOW_CONTROL_KEY] !== false;
+  return roomMetadata[ALLOW_CONTROL_KEY] === true;
 }
 
 /**
