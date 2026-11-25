@@ -1,6 +1,6 @@
 import OBR, { isImage } from "@owlbear-rodeo/sdk";
 import { recordRoll } from "./history";
-import { findCharacter, setupCharacterMenu } from "./character";
+import { findCharacter, handleCharacterClaims, setupCharacterMenu } from "./character";
 import { DieType, finishedRoll } from "./nat20";
 import { showRollBadges } from "./rollBadges";
 import { DEFAULT_TOP_TEXT, loadSettings, playSound, Settings, TEST_CHANNEL } from "./settings";
@@ -112,6 +112,8 @@ function recordMine(metadata: Record<string, unknown>) {
 OBR.onReady(async () => {
   const myId = await OBR.player.getId();
   setupCharacterMenu(myId).catch((e) => console.warn("[nat20-sound] could not add character menu", describe(e)));
+  // The GM's extension carries out players' "Set as my character" requests
+  if ((await OBR.player.getRole()) === "GM") handleCharacterClaims();
   const myMetadata = await OBR.player.getMetadata();
   check(myId, myMetadata, true, true);
   recordMine(myMetadata);
