@@ -1,4 +1,5 @@
 import OBR from "@owlbear-rodeo/sdk";
+import { ALLOW_CONTROL_KEY, controlAllowed } from "./character";
 import { DIE_TYPES } from "./nat20";
 import { loadSettings, playSound, saveSettings, Settings, TEST_CHANNEL } from "./settings";
 
@@ -122,5 +123,27 @@ $("test").addEventListener("click", () => {
   }
 });
 
-if (OBR.isAvailable) OBR.onReady(render);
+// Room-wide switch, shown only to the GM: may players take control of their character token?
+const allowControl = $<HTMLInputElement>("allowControl");
+allowControl.addEventListener("change", () => {
+  OBR.room.setMetadata({ [ALLOW_CONTROL_KEY]: allowControl.checked }).catch(() => {
+    status.textContent = "Couldn't save the room setting.";
+  });
+});
+
+async function setupRoomSettings() {
+  if ((await OBR.player.getRole()) !== "GM") return;
+  $("gmRoomSettings").hidden = false;
+  allowControl.checked = controlAllowed(await OBR.room.getMetadata());
+  OBR.room.onMetadataChange((metadata) => {
+    allowControl.checked = controlAllowed(metadata);
+  });
+}
+
+if (OBR.isAvailable) {
+  OBR.onReady(() => {
+    render();
+    setupRoomSettings();
+  });
+}
 render();

@@ -102,6 +102,10 @@
         <h2>Map</h2>
         <label class="inline"><input id="rollBadges" type="checkbox" /> Show rolled dice above character tokens</label>
         <div class="hint">Right-click your token and choose <b>Set as my character</b>. Rolls of up to 6 dice are shown.</div>
+        <div id="gmRoomSettings" hidden>
+          <label class="inline"><input id="allowControl" type="checkbox" /> Players control the token they set as their character</label>
+          <div class="hint">GM only, applies to the whole room. While on, choosing <b>Set as my character</b> gives that player control of the token; it goes back to its previous owner when they remove it. Needs a GM in the room.</div>
+        </div>
 
         <h2>Trigger</h2>
         <label>Crit sound when these dice roll their max</label>
