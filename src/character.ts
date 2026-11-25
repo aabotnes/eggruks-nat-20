@@ -41,11 +41,7 @@ export async function findCharacter(playerId: string): Promise<Item | undefined>
  */
 async function assignCharacter(playerId: string, tokenId: string | null, giveControl: boolean) {
   const affected = await OBR.scene.items.getItems(
-    (item) =>
-      item.id === tokenId ||
-      item.metadata[OWNER_KEY] === playerId ||
-      // Tokens we handed over earlier, even if the player has already unmarked them
-      (item.createdUserId === playerId && item.metadata[PREVIOUS_OWNER_KEY] !== undefined),
+    (item) => item.metadata[OWNER_KEY] === playerId || item.id === tokenId,
   );
   if (affected.length === 0) return;
   await OBR.scene.items.updateItems(affected, (items) => {
@@ -59,37 +55,13 @@ async function assignCharacter(playerId: string, tokenId: string | null, giveCon
         }
       } else {
         // The player's previous character: unmark it and hand control back
-        if (item.metadata[OWNER_KEY] === playerId) delete item.metadata[OWNER_KEY];
+        delete item.metadata[OWNER_KEY];
         const previous = item.metadata[PREVIOUS_OWNER_KEY];
         if (typeof previous === "string" && item.createdUserId === playerId) item.createdUserId = previous;
         delete item.metadata[PREVIOUS_OWNER_KEY];
       }
     }
   });
-}
-
-/**
- * A player marking their own character without the GM. Only the label changes, never who controls
- * a token. Each token is updated on its own, since the player may be allowed to edit some but not others.
- */
-async function markCharacter(playerId: string, tokenId: string | null) {
-  const previous = await OBR.scene.items.getItems(
-    (item) => item.metadata[OWNER_KEY] === playerId && item.id !== tokenId,
-  );
-  const updates: Promise<void>[] = previous.map((item) =>
-    OBR.scene.items.updateItems([item.id], (items) => {
-      for (const i of items) delete i.metadata[OWNER_KEY];
-    }),
-  );
-  if (tokenId) {
-    updates.push(
-      OBR.scene.items.updateItems([tokenId], (items) => {
-        for (const i of items) i.metadata[OWNER_KEY] = playerId;
-      }),
-    );
-  }
-  // A token we can't edit is left for the GM's extension, which gets the request next
-  await Promise.allSettled(updates);
 }
 
 /** Right-click a token to set (or remove) it as your character */
@@ -113,14 +85,10 @@ export async function setupCharacterMenu(myId: string) {
       if ((await OBR.player.getRole()) === "GM") {
         // The GM can edit any token, and already controls everything
         await assignCharacter(myId, tokenId, false);
-        return;
+      } else {
+        // Players usually can't edit tokens they don't own, so ask the GM's extension to do it
+        await OBR.player.setMetadata({ [CLAIM_KEY]: { tokenId, at: Date.now() } satisfies Claim });
       }
-      // Mark it right away where Owlbear Rodeo lets us, so the dice and pop-up use it even
-      // with no GM around or control switched off...
-      await markCharacter(myId, tokenId);
-      // ...and ask the GM's extension to finish the job: marking tokens we can't edit, and
-      // handing over control when the room allows it
-      await OBR.player.setMetadata({ [CLAIM_KEY]: { tokenId, at: Date.now() } satisfies Claim });
     },
   });
 }
